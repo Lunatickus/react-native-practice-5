@@ -6,6 +6,7 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
 } from "react-native";
 import { Background } from "./Background";
 import { useState } from "react";
@@ -66,12 +67,12 @@ const LoginScreen = () => {
               </Pressable>
             </View>
           </KeyboardAvoidingView>
-          <Pressable style={styles.submitButton} onPress={onLogin}>
+          <TouchableOpacity style={styles.submitButton} onPress={onLogin}>
             <Text style={styles.submitButtonText}>Увійти</Text>
-          </Pressable>
-          <Pressable onPress={() => navigation.navigate("Registration")}>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("Registration")}>
             <Text style={styles.text}>Немає акаунту? Зареєструватися</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </Background>
     </Container>

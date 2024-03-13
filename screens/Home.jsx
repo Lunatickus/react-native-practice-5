@@ -10,7 +10,7 @@ const Tabs = createBottomTabNavigator();
 const Home = () => {
   return (
     <Tabs.Navigator
-      initialRouteName="Posts"
+      initialRouteName="Profile"
       screenOptions={({ route }) => ({
         tabBarStyle: {
           height: 83,

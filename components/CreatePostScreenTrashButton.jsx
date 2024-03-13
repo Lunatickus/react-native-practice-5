@@ -1,14 +1,9 @@
-import { useNavigation } from "@react-navigation/native";
 import { Pressable, StyleSheet } from "react-native";
 import { Mask, Path, Rect, Svg } from "react-native-svg";
 
-export const CreatePostScreenTrashButton = () => {
-  const navigation = useNavigation();
+export const CreatePostScreenTrashButton = ({ onPress }) => {
   return (
-    <Pressable
-      style={styles.buttonContainer}
-      onPress={() => navigation.navigate("Posts")}
-    >
+    <Pressable style={styles.buttonContainer} onPress={onPress}>
       <Svg width="24.000000" height="24.000000" viewBox="0 0 24 24" fill="none">
         <Rect
           width="24.000000"

@@ -1,29 +1,109 @@
 import {
-  Image,
-  Keyboard,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
-  TouchableWithoutFeedback,
+  TouchableOpacity,
   View,
 } from "react-native";
+import * as MediaLibrary from "expo-media-library";
+import * as Location from "expo-location";
 import { CreatePostScreenTrashButton } from "../components/CreatePostScreenTrashButton";
 import { TextInput } from "react-native-gesture-handler";
 import { MapPointIcon } from "../components/MapPointIcon";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Container } from "../components/Container";
+import { useNavigation } from "@react-navigation/native";
+import { Camera } from "expo-camera";
+import { CameraIcon } from "../components/CameraIcon";
 
 const CreatePostsScreen = () => {
   const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
-  const disabled = !name || !location;
+  const [locality, setLocality] = useState("");
+  const [hasPermission, setHasPermission] = useState(null);
+  const [cameraRef, setCameraRef] = useState(null);
+  const [photo, setPhoto] = useState(null);
+  const disabled = !name || !locality || !photo;
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const askPermission = async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      await MediaLibrary.requestPermissionsAsync();
+
+      setHasPermission(status === "granted");
+    };
+    askPermission();
+  }, []);
+
+  if (hasPermission === null) {
+    return <View />;
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>;
+  }
+
+  const handleRemovePost = () => {
+    setName("");
+    setLocality("");
+    navigation.navigate("Posts");
+    setPhoto(null);
+  };
+
+  const handleCreatePost = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      console.log("Permission to access location was denied");
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    const coords = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    };
+    navigation.navigate("Posts", { photo, name, locality, coords });
+    setName("");
+    setLocality("");
+    setPhoto(null);
+  };
 
   return (
     <Container>
       <View style={styles.container}>
-        <Image style={styles.loadImage} />
+        {photo ? (
+          <ImageBackground
+            style={styles.loadImage}
+            source={{ uri: photo }}
+            resizeMode="cover"
+          >
+            <TouchableOpacity
+              style={styles.loadImageButton}
+              onPress={() => setPhoto(null)}
+            >
+              <CameraIcon />
+            </TouchableOpacity>
+          </ImageBackground>
+        ) : (
+          <Camera
+            style={styles.loadImage}
+            type={Camera.Constants.Type.back}
+            ref={setCameraRef}
+          >
+            <TouchableOpacity
+              style={styles.loadImageButton}
+              onPress={async () => {
+                if (cameraRef) {
+                  const { uri } = await cameraRef.takePictureAsync();
+                  setPhoto(uri);
+                  await MediaLibrary.createAssetAsync(uri);
+                }
+              }}
+            >
+              <CameraIcon />
+            </TouchableOpacity>
+          </Camera>
+        )}
         <Text style={styles.loadImageText}>Завантажте фото</Text>
         <KeyboardAvoidingView
           style={{ width: "100%", marginBottom: 32 }}
@@ -42,15 +122,16 @@ const CreatePostsScreen = () => {
               style={styles.locationInput}
               placeholder="Місцевість..."
               placeholderTextColor="#BDBDBD"
-              value={location}
-              onChangeText={setLocation}
+              value={locality}
+              onChangeText={setLocality}
             />
-            <MapPointIcon />
+            <MapPointIcon styles={{ position: "absolute", top: 13, left: 0 }} />
           </View>
         </KeyboardAvoidingView>
-        <Pressable
+        <TouchableOpacity
           style={disabled ? styles.disabledPublishButton : styles.publishButton}
           disabled={disabled}
+          onPress={handleCreatePost}
         >
           <Text
             style={
@@ -61,10 +142,10 @@ const CreatePostsScreen = () => {
           >
             Опубліковати
           </Text>
-        </Pressable>
-        <CreatePostScreenTrashButton />
+        </TouchableOpacity>
+        <CreatePostScreenTrashButton onPress={handleRemovePost} />
       </View>
-      </Container>
+    </Container>
   );
 };
 
@@ -82,11 +163,23 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   loadImage: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     width: "100%",
     height: 240,
     borderRadius: 10,
     backgroundColor: "#F6F6F6",
     marginBottom: 8,
+  },
+  loadImageButton: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 60,
+    height: 60,
+    borderRadius: 50,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
   },
   loadImageText: {
     fontFamily: "Roboto-Light",

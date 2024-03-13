@@ -1,6 +1,12 @@
+import { useRoute } from "@react-navigation/native";
 import { Image, StyleSheet, Text, View } from "react-native";
+import { Post } from "../components/Post";
 
 const PostsScreen = () => {
+  const {
+    params: { name, photo, locality, coords },
+  } = useRoute();
+
   return (
     <View style={styles.container}>
       <View style={styles.imageWrapper}>
@@ -10,6 +16,7 @@ const PostsScreen = () => {
           <Text style={styles.textEmail}>email@example.com</Text>
         </View>
       </View>
+        <Post name={name} coords={coords} photo={photo} location={locality} />
     </View>
   );
 };
@@ -29,6 +36,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     gap: 8,
+    marginBottom: 32,
   },
   image: {
     width: 60,

@@ -1,9 +1,9 @@
 import { Path, Rect, Svg } from "react-native-svg";
 
-export const MapPointIcon = () => {
+export const MapPointIcon = ({styles}) => {
   return (
     <Svg
-      style={{ position: "absolute", top: 13, left: 0 }}
+      style={styles}
       width="24.000000"
       height="24.000000"
       viewBox="0 0 24 24"
